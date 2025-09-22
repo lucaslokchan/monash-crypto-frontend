@@ -72,7 +72,7 @@ export function Navigation() {
               <Popover>
                 <PopoverTrigger asChild>
                   <button 
-                    className="relative h-8 w-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    className="relative h-8 w-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/80"
                     onClick={() => console.log('Button clicked')}
                   >
                     {user.username.charAt(0).toUpperCase()}
