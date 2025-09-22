@@ -3,19 +3,14 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Separator } from "@/components/ui/separator"
 import { LogOut, BarChart3, Settings } from "lucide-react"
 import { useState, useEffect } from "react"
-import { getCurrentUser, logout, isBlogger } from "@/lib/auth"
+import { getCurrentUser, logout, isBlogger, type User } from "@/lib/auth"
 
 export function Navigation() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     setUser(getCurrentUser())
@@ -35,7 +30,7 @@ export function Navigation() {
     window.location.href = "/"
   }
 
-  const showDashboard = isBlogger()
+  const showDashboard = user ? isBlogger() : false
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -74,55 +69,53 @@ export function Navigation() {
           {/* Right Side - Auth */}
           <div className="flex items-center space-x-4">
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {user.username.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  className="w-56 mr-4 bg-background border border-border shadow-lg"
-                  align="end"
-                  forceMount
-                  sideOffset={8}
-                >
-                  <div className="flex items-center justify-start gap-2 p-2">
-                    <div className="flex flex-col space-y-1 leading-none">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button 
+                    className="relative h-8 w-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    onClick={() => console.log('Button clicked')}
+                  >
+                    {user.username.charAt(0).toUpperCase()}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56" align="end">
+                  <div className="p-2">
+                    <div className="pb-2 border-b">
                       <p className="font-medium text-sm">{user.username}</p>
                       <p className="text-xs text-muted-foreground">
                         {user.role === "PREMIUM_BLOGGER" ? "Premium User" : "Basic User"}
                       </p>
                     </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  {showDashboard && (
-                    <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link href="/dashboard" className="flex items-center">
-                        <BarChart3 className="mr-2 h-4 w-4" />
-                        <span>Dashboard</span>
+                    <div className="pt-2 space-y-1">
+                      {showDashboard && (
+                        <Link 
+                          href="/dashboard"
+                          className="flex items-center px-2 py-1.5 text-sm rounded hover:bg-accent"
+                        >
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          Dashboard
+                        </Link>
+                      )}
+                      <Link 
+                        href="/dashboard/settings"
+                        className="flex items-center px-2 py-1.5 text-sm rounded hover:bg-accent"
+                      >
+                        <Settings className="mr-2 h-4 w-4" />
+                        Settings
                       </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/dashboard/settings" className="flex items-center">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleLogout}
-                    className="cursor-pointer text-destructive focus:text-destructive"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      <div className="border-t pt-1">
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center w-full px-2 py-1.5 text-sm rounded text-destructive hover:bg-destructive/10"
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Log out
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             ) : (
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" asChild>
