@@ -23,9 +23,9 @@ export default function LoginPage() {
 
   // Mock users for demonstration
   const mockUsers = [
-    { email: "analyst@monash.edu", password: "password123", username: "crypto_analyst", role: "PREMIUM_BLOGGER" },
-    { email: "student@monash.edu", password: "password123", username: "blockchain_student", role: "BASIC_BLOGGER" },
-    { email: "researcher@monash.edu", password: "password123", username: "defi_researcher", role: "PREMIUM_BLOGGER" },
+    { email: "analyst@monash.edu", password: "password123", username: "crypto_analyst", role: "PREMIUM_USER" },
+    { email: "student@monash.edu", password: "password123", username: "blockchain_student", role: "NORMAL_USER" },
+    { email: "researcher@monash.edu", password: "password123", username: "defi_researcher", role: "PREMIUM_USER" },
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,22 +33,55 @@ export default function LoginPage() {
     setIsLoading(true)
     setError("")
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      // Call the login API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password
+        }),
+      })
 
-    // Mock authentication
-    const user = mockUsers.find((u) => u.email === email && u.password === password)
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError("Invalid email or password. Please try again.")
+        } else {
+          const errorData = await response.json()
+          setError(errorData.message || "Login failed. Please try again.")
+        }
+        setIsLoading(false)
+        return
+      }
 
-    if (user) {
-      // Store user in localStorage (in real app, this would be a JWT token)
-      localStorage.setItem("mockUser", JSON.stringify({ username: user.username, role: user.role }))
+      const loginData = await response.json()
+      
+      // Store the JWT token in localStorage
+      localStorage.setItem("authToken", loginData.token)
+      
+      // Decode the JWT to get user information (basic decoding, not validation)
+      const tokenPayload = JSON.parse(atob(loginData.token.split('.')[1]))
+      
+      // Store user data for the UI
+      localStorage.setItem("user", JSON.stringify({ 
+        username: tokenPayload.sub.split('@')[0], // Extract username from email
+        role: tokenPayload.userRole, // Use the role directly from token (NORMAL_USER or PREMIUM_USER)
+        userUuid: tokenPayload.userUuid,
+        email: tokenPayload.sub
+      }))
+      
       router.push("/")
       router.refresh()
-    } else {
-      setError("Invalid email or password. Try analyst@monash.edu / password123")
-    }
 
-    setIsLoading(false)
+    } catch (error) {
+      console.error('Login error:', error)
+      setError("Network error. Please check your connection and try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

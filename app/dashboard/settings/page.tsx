@@ -47,7 +47,7 @@ export default function SettingsPage() {
     // Update localStorage
     if (user) {
       const updatedUser = { ...user, username: formData.username }
-      localStorage.setItem("mockUser", JSON.stringify(updatedUser))
+      localStorage.setItem("user", JSON.stringify(updatedUser))
       setUser(updatedUser)
     }
 

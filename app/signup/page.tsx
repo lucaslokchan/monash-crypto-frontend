@@ -66,7 +66,7 @@ export default function SignUpPage() {
       const userData = await response.json()
       
       // Store user data in localStorage (in real app, this would be a JWT token)
-      // localStorage.setItem("mockUser", JSON.stringify({ 
+      // localStorage.setItem("user", JSON.stringify({ 
       //   username: userData.username || username, 
       //   role: userData.accountType || accountType 
       // }))
