@@ -17,7 +17,7 @@ export default function SignUpPage() {
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [role, setRole] = useState("BASIC_BLOGGER")
+  const [accountType, setAccountType] = useState("NORMAL")
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -41,16 +41,45 @@ export default function SignUpPage() {
       return
     }
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      // Call the registration API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          accountType
+        }),
+      })
 
-    // Mock successful registration
-    const newUser = { username, role }
-    localStorage.setItem("mockUser", JSON.stringify(newUser))
-    router.push("/")
-    router.refresh()
+      if (!response.ok) {
+        const errorData = await response.json()
+        setError(errorData.message || "Registration failed. Please try again.")
+        setIsLoading(false)
+        return
+      }
 
-    setIsLoading(false)
+      const userData = await response.json()
+      
+      // Store user data in localStorage (in real app, this would be a JWT token)
+      // localStorage.setItem("mockUser", JSON.stringify({ 
+      //   username: userData.username || username, 
+      //   role: userData.accountType || accountType 
+      // }))
+      
+      router.push("/login")
+      router.refresh()
+
+    } catch (error) {
+      console.error('Registration error:', error)
+      setError("Network error. Please check your connection and try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -137,21 +166,21 @@ export default function SignUpPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <Button
                       type="button"
-                      variant={role === "BASIC_BLOGGER" ? "default" : "outline"}
+                      variant={accountType === "NORMAL" ? "default" : "outline"}
                       className="h-auto p-4 flex flex-col items-center space-y-2"
-                      onClick={() => setRole("BASIC_BLOGGER")}
+                      onClick={() => setAccountType("NORMAL")}
                     >
                       <User className="h-5 w-5" />
                       <div className="text-center">
-                        <div className="font-medium">Basic</div>
+                        <div className="font-medium">NORMAL</div>
                         <div className="text-xs opacity-70">Free</div>
                       </div>
                     </Button>
                     <Button
                       type="button"
-                      variant={role === "PREMIUM_BLOGGER" ? "default" : "outline"}
+                      variant={accountType === "PREMIUM" ? "default" : "outline"}
                       className="h-auto p-4 flex flex-col items-center space-y-2"
-                      onClick={() => setRole("PREMIUM_BLOGGER")}
+                      onClick={() => setAccountType("PREMIUM")}
                     >
                       <Crown className="h-5 w-5" />
                       <div className="text-center">
@@ -161,7 +190,7 @@ export default function SignUpPage() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Basic bloggers have access to standard features. Premium includes advanced analytics and insights.
+                    NORMAL bloggers have access to standard features. Premium includes advanced analytics and insights.
                   </p>
                 </div>
 
