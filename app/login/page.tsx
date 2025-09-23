@@ -66,6 +66,7 @@ export default function LoginPage() {
       const tokenPayload = JSON.parse(atob(loginData.token.split('.')[1]))
       
       // Store user data for the UI
+      // TODO: Should get user data from backend API set into a global state instead of localStorage
       localStorage.setItem("user", JSON.stringify({ 
         username: tokenPayload.sub.split('@')[0], // Extract username from email
         role: tokenPayload.userRole, // Use the role directly from token (NORMAL_USER or PREMIUM_USER)
