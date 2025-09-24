@@ -1,17 +1,18 @@
 "use client"
 
-// Mock authentication utilities
-// In a real application, this would handle JWT tokens and API calls
+// Authentication utilities with JWT support
 
 export interface User {
-  username: string
-  role: "BASIC_BLOGGER" | "PREMIUM_BLOGGER"
+  username: string;
+  role: "NORMAL_USER" | "PREMIUM_USER";
+  userUuid?: string;
+  email?: string;
 }
 
 export function getCurrentUser(): User | null {
   if (typeof window === "undefined") return null
 
-  const userStr = localStorage.getItem("mockUser")
+  const userStr = localStorage.getItem("user")
   if (!userStr) return null
 
   try {
@@ -21,22 +22,28 @@ export function getCurrentUser(): User | null {
   }
 }
 
+export function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null
+  return localStorage.getItem("authToken")
+}
+
 export function isAuthenticated(): boolean {
-  return getCurrentUser() !== null
+  return getCurrentUser() !== null && getAuthToken() !== null
 }
 
 export function isBlogger(): boolean {
   const user = getCurrentUser()
-  return user?.role === "BASIC_BLOGGER" || user?.role === "PREMIUM_BLOGGER"
+  return user?.role === "NORMAL_USER" || user?.role === "PREMIUM_USER";
 }
 
 export function isPremiumBlogger(): boolean {
   const user = getCurrentUser()
-  return user?.role === "PREMIUM_BLOGGER"
+  return user?.role === "PREMIUM_USER";
 }
 
 export function logout(): void {
-  localStorage.removeItem("mockUser")
+  localStorage.removeItem("user")
+  localStorage.removeItem("authToken")
   // Trigger storage event for other components to update
   window.dispatchEvent(new Event("storage"))
 }

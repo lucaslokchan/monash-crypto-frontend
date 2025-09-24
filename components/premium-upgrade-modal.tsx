@@ -44,11 +44,11 @@ export function PremiumUpgradeModal({ isOpen, onClose }: PremiumUpgradeModalProp
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // Update user role in localStorage (mock implementation)
-    const currentUser = localStorage.getItem("mockUser")
+    const currentUser = localStorage.getItem("user")
     if (currentUser) {
       const user = JSON.parse(currentUser)
       user.role = "PREMIUM_BLOGGER"
-      localStorage.setItem("mockUser", JSON.stringify(user))
+      localStorage.setItem("user", JSON.stringify(user))
     }
 
     setIsUpgrading(false)
