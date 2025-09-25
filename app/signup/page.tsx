@@ -35,11 +35,11 @@ export default function SignUpPage() {
       return
     }
 
-    if (!email.includes("@monash.edu")) {
-      setError("Please use a valid Monash University email address")
-      setIsLoading(false)
-      return
-    }
+    // if (!email.includes("@monash.edu")) {
+    //   setError("Please use a valid Monash University email address")
+    //   setIsLoading(false)
+    //   return
+    // }
 
     try {
       // Call the registration API
