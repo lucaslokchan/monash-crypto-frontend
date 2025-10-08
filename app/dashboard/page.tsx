@@ -109,7 +109,7 @@ export default function DashboardPage() {
         </div> */}
 
         {/* Posts Table */}
-        <PostsTable posts={mockPosts} />
+        {/* <PostsTable posts={mockPosts} /> */}
       </div>
 
       {/* Premium Analytics - Conditional Visibility */}
