@@ -29,6 +29,7 @@ interface ParsedActivityDetails {
 interface FormattedActivity {
   id: string
   user: string
+  userUuid: string
   action: string
   details: ParsedActivityDetails
   detailsDisplay: string
@@ -124,7 +125,8 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
 
       return {
         id: `${activity.userUuid}-${activity.creationTime}-${index}`,
-        user: activity.userUuid.substring(0, 8) + "...", // Shorten UUID for display
+        user: activity.userUuid.substring(0, 8) + "...", // Shortened for backward compatibility
+        userUuid: activity.userUuid, // Full UUID
         action: activity.eventType,
         details: parsedDetails,
         detailsDisplay,
@@ -224,7 +226,7 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
             <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
+                <TableHead>User UUID</TableHead>
                 <TableHead>Action</TableHead>
                 <TableHead>Details</TableHead>
                 <TableHead>Timestamp</TableHead>
@@ -240,7 +242,9 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
               ) : (
                 currentActivities.map((activity) => (
                   <TableRow key={activity.id}>
-                    <TableCell className="font-medium">{activity.user}</TableCell>
+                    <TableCell className="font-mono text-xs" title={activity.userUuid}>
+                      {activity.userUuid}
+                    </TableCell>
                     <TableCell>
                       <Badge className={getActionColor(activity.action)}>{activity.action}</Badge>
                     </TableCell>

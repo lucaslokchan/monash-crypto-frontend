@@ -236,8 +236,8 @@ export function AdminActivityTable() {
                 ) : (
                   currentActivities.map((activity) => (
                     <TableRow key={activity.id}>
-                      <TableCell className="font-mono text-xs">
-                        {activity.userUuid.substring(0, 8)}...
+                      <TableCell className="font-mono text-xs" title={activity.userUuid}>
+                        {activity.userUuid}
                       </TableCell>
                       <TableCell>
                         <Badge className={getActionColor(activity.action)}>{activity.action}</Badge>
