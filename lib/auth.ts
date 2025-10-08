@@ -4,7 +4,7 @@
 
 export interface User {
   username: string;
-  role: "NORMAL_USER" | "PREMIUM_USER";
+  role: "NORMAL_USER" | "PREMIUM_USER" | "ADMIN_USER";
   userUuid?: string;
   email?: string;
 }
@@ -39,6 +39,11 @@ export function isBlogger(): boolean {
 export function isPremiumBlogger(): boolean {
   const user = getCurrentUser()
   return user?.role === "PREMIUM_USER";
+}
+
+export function isAdmin(): boolean {
+  const user = getCurrentUser()
+  return user?.role === "ADMIN_USER";
 }
 
 export function logout(): void {

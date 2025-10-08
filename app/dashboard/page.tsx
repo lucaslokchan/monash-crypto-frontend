@@ -5,9 +5,11 @@ import { StatCard } from "@/components/dashboard/stat-card"
 import { PostsTable } from "@/components/dashboard/posts-table"
 import { TimeSeriesChart } from "@/components/dashboard/time-series-chart"
 import { UserActivityTable } from "@/components/dashboard/user-activity-table"
+import { AdminActivityTable } from "@/components/dashboard/admin-activity-table"
+import { AdminTimeSeriesChart } from "@/components/dashboard/admin-time-series-chart"
 import { PremiumFeatureLock } from "@/components/premium-feature-lock"
 import { Eye, Heart, MessageCircle, FileText } from "lucide-react"
-import { getCurrentUser, isPremiumBlogger } from "@/lib/auth"
+import { getCurrentUser, isPremiumBlogger, isAdmin } from "@/lib/auth"
 
 // Mock data
 const mockStats = {
@@ -55,15 +57,54 @@ const mockPosts = [
 export default function DashboardPage() {
   const [user, setUser] = useState<{ username: string; role: string } | null>(null)
   const [isPremium, setIsPremium] = useState(false)
+  const [isAdminUser, setIsAdminUser] = useState(false)
 
   useEffect(() => {
     const currentUser = getCurrentUser()
     setUser(currentUser)
     setIsPremium(isPremiumBlogger())
+    setIsAdminUser(isAdmin())
   }, [])
 
   if (!user) return null
 
+  // Admin Dashboard View
+  if (isAdminUser) {
+    return (
+      <div className="space-y-8">
+        {/* Welcome Header */}
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-foreground">
+            Admin Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Monitor all user activities across the platform.
+          </p>
+        </div>
+
+        {/* Admin Analytics */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold text-foreground">
+            All User Activities
+          </h2>
+
+          {/* Admin Activity Table */}
+          <AdminActivityTable />
+        </div>
+
+        {/* Admin Time Series Chart */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold text-foreground">
+            Activity Trends
+          </h2>
+
+          <AdminTimeSeriesChart />
+        </div>
+      </div>
+    )
+  }
+
+  // Regular User Dashboard View
   return (
     <div className="space-y-8">
       {/* Welcome Header */}

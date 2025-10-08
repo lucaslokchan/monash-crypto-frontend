@@ -227,3 +227,53 @@ export async function fetchUserActivities(params?: PaginationParams): Promise<Fe
     }
   }
 }
+
+/**
+ * Fetches all user activities from the backend API (Admin only)
+ * @returns Promise with all user activities data
+ */
+export async function fetchAllUserActivities(): Promise<FetchActivitiesResponse> {
+  try {
+    const authToken = getAuthToken()
+    
+    if (!authToken) {
+      console.warn("No auth token available for fetching activities")
+      return {
+        success: false,
+        message: "User not authenticated",
+      }
+    }
+
+    // Get API URL from environment variable or use default
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+    
+    const response = await fetch(`${apiUrl}/api/activity/all`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("Failed to fetch all user activities:", errorText)
+      return {
+        success: false,
+        message: `Failed to fetch activities: ${response.statusText}`,
+      }
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      activities: data,
+    }
+  } catch (error) {
+    console.error("Error fetching all user activities:", error)
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error occurred",
+    }
+  }
+}
