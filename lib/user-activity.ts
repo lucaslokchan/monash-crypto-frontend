@@ -148,3 +148,70 @@ export async function logTimeSpent(
   })
 }
 
+// Type for user activity data from the API
+export interface UserActivityData {
+  userUuid: string
+  eventType: UserActivityEnum
+  details: string
+  creationTime: string
+}
+
+// Type for fetching activities response
+export interface FetchActivitiesResponse {
+  success: boolean
+  activities?: UserActivityData[]
+  message?: string
+}
+
+/**
+ * Fetches user activities from the backend API
+ * @param limit - Optional limit for the number of activities to fetch
+ * @returns Promise with the activities data
+ */
+export async function fetchUserActivities(limit?: number): Promise<FetchActivitiesResponse> {
+  try {
+    const authToken = getAuthToken()
+    
+    if (!authToken) {
+      console.warn("No auth token available for fetching activities")
+      return {
+        success: false,
+        message: "User not authenticated",
+      }
+    }
+
+    // Get API URL from environment variable or use default
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+    
+    // Build query params
+    const queryParams = limit ? `?limit=${limit}` : ""
+    
+    const response = await fetch(`${apiUrl}/api/activity${queryParams}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${authToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("Failed to fetch user activities:", errorText)
+      return {
+        success: false,
+        message: `Failed to fetch activities: ${response.statusText}`,
+      }
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      activities: data,
+    }
+  } catch (error) {
+    console.error("Error fetching user activities:", error)
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error occurred",
+    }
+  }
+}
