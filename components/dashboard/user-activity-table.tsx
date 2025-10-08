@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -46,18 +46,42 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const loadingRef = useRef(false)
+  const mountedRef = useRef(true)
 
   useEffect(() => {
-    loadActivities()
+    // Ensure mounted ref is set to true on mount
+    mountedRef.current = true
+    
+    // Prevent duplicate calls in React Strict Mode
+    if (!loadingRef.current) {
+      loadActivities()
+    }
+
+    // Cleanup function
+    return () => {
+      mountedRef.current = false
+    }
   }, [])
 
   const loadActivities = async () => {
+    // Prevent duplicate calls
+    if (loadingRef.current) {
+      return
+    }
+
     try {
+      loadingRef.current = true
       setLoading(true)
       setError(null)
       
       // Fetch all activities without pagination params
       const response = await fetchUserActivities()
+      
+      // Check if component is still mounted before updating state
+      if (!mountedRef.current) {
+        return
+      }
       
       if (!response.success) {
         setError(response.message || "Failed to load activities")
@@ -67,12 +91,18 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
       if (response.activities) {
         const formattedActivities = formatActivities(response.activities)
         setAllActivities(formattedActivities)
+      } else {
+        setAllActivities([])
       }
     } catch (err) {
-      setError("Error loading activities")
-      console.error("Error loading activities:", err)
+      if (mountedRef.current) {
+        setError("Error loading activities")
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
+      loadingRef.current = false
     }
   }
 
