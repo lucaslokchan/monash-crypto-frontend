@@ -85,30 +85,8 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
         // Parse the details JSON string
         parsedDetails = JSON.parse(activity.details)
         
-        // Format display based on event type
-        switch (activity.eventType) {
-          case UserActivityEnum.PAGE_VIEW:
-            detailsDisplay = parsedDetails.data || "Unknown page"
-            if (parsedDetails.postId) {
-              detailsDisplay += ` (Post ID: ${parsedDetails.postId})`
-            }
-            break
-          case UserActivityEnum.LIKE:
-          case UserActivityEnum.COMMENT:
-          case UserActivityEnum.SHARE:
-            detailsDisplay = parsedDetails.postId ? `Post ID: ${parsedDetails.postId}` : "Unknown post"
-            break
-          case UserActivityEnum.TIME_SPENT:
-            detailsDisplay = parsedDetails.data || "Unknown page"
-            if (parsedDetails.duration) {
-              const minutes = Math.floor(parsedDetails.duration / 60)
-              const seconds = parsedDetails.duration % 60
-              detailsDisplay += ` (${minutes}m ${seconds}s)`
-            }
-            break
-          default:
-            detailsDisplay = JSON.stringify(parsedDetails)
-        }
+        // Display the raw .data content for all activity types
+        detailsDisplay = parsedDetails.data || "No data"
       } catch (e) {
         // If parsing fails, use the raw details string
         detailsDisplay = activity.details

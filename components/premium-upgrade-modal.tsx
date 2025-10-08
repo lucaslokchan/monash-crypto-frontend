@@ -43,19 +43,20 @@ export function PremiumUpgradeModal({ isOpen, onClose }: PremiumUpgradeModalProp
     // Simulate upgrade process
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
-    // Update user role in localStorage (mock implementation)
-    const currentUser = localStorage.getItem("user")
-    if (currentUser) {
-      const user = JSON.parse(currentUser)
-      user.role = "PREMIUM_BLOGGER"
-      localStorage.setItem("user", JSON.stringify(user))
-    }
-
     setIsUpgrading(false)
-    onClose()
+    // Update user role in localStorage (mock implementation)
+    // const currentUser = localStorage.getItem("user")
+    // if (currentUser) {
+    //   const user = JSON.parse(currentUser)
+    //   user.role = "PREMIUM_BLOGGER"
+    //   localStorage.setItem("user", JSON.stringify(user))
+    // }
+
+    // setIsUpgrading(false)
+    // onClose()
 
     // Refresh the page to update the UI
-    window.location.reload()
+    // window.location.reload()
   }
 
   return (

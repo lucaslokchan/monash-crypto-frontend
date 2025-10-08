@@ -100,8 +100,9 @@ export async function logUserActivity(
  * @param postId - Optional post ID if viewing a specific post
  */
 export async function logPageView(path?: string, postId?: number): Promise<LogActivityResponse> {
+  const actualPath = path || (typeof window !== "undefined" ? window.location.pathname : undefined)
   return logUserActivity(UserActivityEnum.PAGE_VIEW, {
-    data: path || (typeof window !== "undefined" ? window.location.pathname : undefined),
+    data: actualPath ? `path: ${actualPath}` : undefined,
     postId,
   })
 }
@@ -141,9 +142,10 @@ export async function logTimeSpent(
   path?: string,
   postId?: number
 ): Promise<LogActivityResponse> {
+  const actualPath = path || (typeof window !== "undefined" ? window.location.pathname : undefined)
   return logUserActivity(UserActivityEnum.TIME_SPENT, {
     duration,
-    data: path || (typeof window !== "undefined" ? window.location.pathname : undefined),
+    data: actualPath ? `path: ${actualPath}` : undefined,
     postId,
   })
 }
@@ -151,7 +153,7 @@ export async function logTimeSpent(
 // Type for user activity data from the API
 export interface UserActivityData {
   userUuid: string
-  eventType: UserActivityEnum
+  eventType: UserActivityEnum 
   details: string
   creationTime: string
 }
