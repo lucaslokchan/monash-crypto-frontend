@@ -1,58 +1,18 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { StatCard } from "@/components/dashboard/stat-card"
-import { PostsTable } from "@/components/dashboard/posts-table"
 import { TimeSeriesChart } from "@/components/dashboard/time-series-chart"
 import { UserActivityTable } from "@/components/dashboard/user-activity-table"
 import { AdminActivityTable } from "@/components/dashboard/admin-activity-table"
 import { AdminTimeSeriesChart } from "@/components/dashboard/admin-time-series-chart"
+import { AdminActivityPieChart } from "@/components/dashboard/admin-activity-pie-chart"
+import { AdminActivityBarChart } from "@/components/dashboard/admin-activity-bar-chart"
+import { AdminUserEngagementChart } from "@/components/dashboard/admin-user-engagement-chart"
+import { AdminTopPagesChart } from "@/components/dashboard/admin-top-pages-chart"
+import { AdminStatsCards } from "@/components/dashboard/admin-stats-cards"
 import { PremiumFeatureLock } from "@/components/premium-feature-lock"
-import { Eye, Heart, MessageCircle, FileText } from "lucide-react"
 import { getCurrentUser, isPremiumBlogger, isAdmin } from "@/lib/auth"
 
-// Mock data
-const mockStats = {
-  totalViews: 12543,
-  totalLikes: 89,
-  totalComments: 34,
-  totalPosts: 4,
-}
-
-const mockPosts = [
-  {
-    id: 1,
-    title: "Understanding Bitcoin's Lightning Network",
-    createdAt: "2024-01-15T10:30:00Z",
-    views: 4200,
-    likes: 24,
-    comments: 8,
-  },
-  {
-    id: 2,
-    title: "DeFi Yield Farming: Opportunities and Risks",
-    createdAt: "2024-01-12T14:20:00Z",
-    views: 3800,
-    likes: 18,
-    comments: 12,
-  },
-  {
-    id: 3,
-    title: "NFTs Beyond Art: Real-World Applications",
-    createdAt: "2024-01-10T09:15:00Z",
-    views: 2900,
-    likes: 31,
-    comments: 6,
-  },
-  {
-    id: 4,
-    title: "Central Bank Digital Currencies: The Future of Money?",
-    createdAt: "2024-01-08T16:45:00Z",
-    views: 1643,
-    likes: 42,
-    comments: 15,
-  },
-]
 
 export default function DashboardPage() {
   const [user, setUser] = useState<{ username: string; role: string } | null>(null)
@@ -82,6 +42,29 @@ export default function DashboardPage() {
           </p>
         </div>
 
+        {/* Stats Cards */}
+        <AdminStatsCards />
+
+        {/* Activity Distribution and Top Pages */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <AdminActivityPieChart />
+          <AdminTopPagesChart />
+        </div>
+
+        {/* Time Series and Bar Chart */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold text-foreground">
+            Activity Trends Over Time
+          </h2>
+          <AdminTimeSeriesChart />
+        </div>
+
+        {/* Daily Comparison and User Engagement */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <AdminActivityBarChart />
+          <AdminUserEngagementChart />
+        </div>
+
         {/* Admin Analytics */}
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-foreground">
@@ -90,15 +73,6 @@ export default function DashboardPage() {
 
           {/* Admin Activity Table */}
           <AdminActivityTable />
-        </div>
-
-        {/* Admin Time Series Chart */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-semibold text-foreground">
-            Activity Trends
-          </h2>
-
-          <AdminTimeSeriesChart />
         </div>
       </div>
     )
