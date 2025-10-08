@@ -15,7 +15,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { formatDistanceToNow } from "date-fns"
-import { fetchUserActivities, UserActivityData, UserActivityEnum } from "@/lib/user-activity"
+import { fetchAllUserActivities, UserActivityData } from "@/lib/user-activity"
 
 // Interface for parsed activity details
 interface ParsedActivityDetails {
@@ -28,7 +28,6 @@ interface ParsedActivityDetails {
 // Interface for formatted activity
 interface FormattedActivity {
   id: string
-  user: string
   userUuid: string
   action: string
   details: ParsedActivityDetails
@@ -36,13 +35,9 @@ interface FormattedActivity {
   timestamp: string
 }
 
-interface UserActivityTableProps {
-  isBlurred?: boolean
-}
+const ITEMS_PER_PAGE = 15
 
-const ITEMS_PER_PAGE = 10
-
-export function UserActivityTable({ isBlurred = false }: UserActivityTableProps) {
+export function AdminActivityTable() {
   const [allActivities, setAllActivities] = useState<FormattedActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -76,8 +71,8 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
       setLoading(true)
       setError(null)
       
-      // Fetch all activities without pagination params
-      const response = await fetchUserActivities()
+      // Fetch all activities (admin endpoint)
+      const response = await fetchAllUserActivities()
       
       // Check if component is still mounted before updating state
       if (!mountedRef.current) {
@@ -125,8 +120,7 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
 
       return {
         id: `${activity.userUuid}-${activity.creationTime}-${index}`,
-        user: activity.userUuid.substring(0, 8) + "...", // Shortened for backward compatibility
-        userUuid: activity.userUuid, // Full UUID
+        userUuid: activity.userUuid,
         action: activity.eventType,
         details: parsedDetails,
         detailsDisplay,
@@ -199,9 +193,9 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
   }
 
   return (
-    <Card className={isBlurred ? "relative" : ""}>
+    <Card>
       <CardHeader>
-        <CardTitle>Detailed User Journey</CardTitle>
+        <CardTitle>All User Activities (Admin View)</CardTitle>
         {!loading && totalItems > 0 && (
           <p className="text-sm text-muted-foreground">
             Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} activities
@@ -224,71 +218,73 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
         ) : (
           <>
             <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User UUID</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Details</TableHead>
-                <TableHead>Timestamp</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {                currentActivities.length === 0 && allActivities.length === 0 ? (
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    No activities found
-                  </TableCell>
+                  <TableHead>User UUID</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Details</TableHead>
+                  <TableHead>Timestamp</TableHead>
                 </TableRow>
-              ) : (
-                currentActivities.map((activity) => (
-                  <TableRow key={activity.id}>
-                    <TableCell className="font-mono text-xs" title={activity.userUuid}>
-                      {activity.userUuid}
+              </TableHeader>
+              <TableBody>
+                {currentActivities.length === 0 && allActivities.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                      No activities found
                     </TableCell>
-                    <TableCell>
-                      <Badge className={getActionColor(activity.action)}>{activity.action}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="max-w-xs truncate" title={activity.detailsDisplay}>
-                        {activity.detailsDisplay}
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}</TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  currentActivities.map((activity) => (
+                    <TableRow key={activity.id}>
+                      <TableCell className="font-mono text-xs" title={activity.userUuid}>
+                        {activity.userUuid}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getActionColor(activity.action)}>{activity.action}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-xs truncate" title={activity.detailsDisplay}>
+                          {activity.detailsDisplay}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           
-          {showPagination && !loading && (
-            <div className="mt-4">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious 
-                      onClick={(e) => {
-                        e.preventDefault()
-                        handlePageChange(currentPage - 1)
-                      }}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                    />
-                  </PaginationItem>
-                  
-                  {renderPaginationItems()}
-                  
-                  <PaginationItem>
-                    <PaginationNext 
-                      onClick={(e) => {
-                        e.preventDefault()
-                        handlePageChange(currentPage + 1)
-                      }}
-                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
+            {showPagination && !loading && (
+              <div className="mt-4">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handlePageChange(currentPage - 1)
+                        }}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                    
+                    {renderPaginationItems()}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handlePageChange(currentPage + 1)
+                        }}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
           </>
         )}
       </CardContent>

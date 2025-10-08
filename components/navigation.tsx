@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator"
 import { LogOut, BarChart3, Settings } from "lucide-react"
 import { useState, useEffect } from "react"
-import { getCurrentUser, logout, isBlogger, type User } from "@/lib/auth"
+import { getCurrentUser, logout, isAuthenticated, type User } from "@/lib/auth"
 
 export function Navigation() {
   const [user, setUser] = useState<User | null>(null)
@@ -30,7 +30,7 @@ export function Navigation() {
     window.location.href = "/"
   }
 
-  const showDashboard = user ? isBlogger() : false
+  const showDashboard = user ? isAuthenticated() : false;
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
