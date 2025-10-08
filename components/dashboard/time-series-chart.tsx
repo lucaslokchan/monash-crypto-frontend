@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { fetchUserActivities, UserActivityData, UserActivityEnum } from "@/lib/user-activity"
 
 interface ActivityChartData {
@@ -35,7 +35,7 @@ export function TimeSeriesChart({ isBlurred = false }: TimeSeriesChartProps) {
   const [selectedEventType, setSelectedEventType] = useState<string>("all")
 
   // Function to process raw activity data into chart format
-  const processActivityData = (activities: UserActivityData[]): ActivityChartData[] => {
+  const processActivityData = useCallback((activities: UserActivityData[]): ActivityChartData[] => {
     // Group activities by date
     const dateGroups: { [date: string]: { [eventType: string]: number } } = {}
     
@@ -71,10 +71,10 @@ export function TimeSeriesChart({ isBlurred = false }: TimeSeriesChartProps) {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     
     return chartData
-  }
+  }, [])
 
   // Function to calculate the maximum Y-axis value
-  const calculateYAxisMax = (data: ActivityChartData[], eventType: string): number => {
+  const calculateYAxisMax = useCallback((data: ActivityChartData[], eventType: string): number => {
     if (data.length === 0) return 10
     
     let maxValue = 0
@@ -96,7 +96,7 @@ export function TimeSeriesChart({ isBlurred = false }: TimeSeriesChartProps) {
     
     // Add 20% padding to the maximum value, with a minimum of 5
     return Math.max(Math.ceil(maxValue * 1.2), 5)
-  }
+  }, [])
 
   // Fetch activity data on component mount
   useEffect(() => {
@@ -124,14 +124,14 @@ export function TimeSeriesChart({ isBlurred = false }: TimeSeriesChartProps) {
     }
 
     loadActivityData()
-  }, [])
+  }, [processActivityData, calculateYAxisMax, selectedEventType])
 
   // Recalculate Y-axis when event type selection changes
   useEffect(() => {
     if (chartData.length > 0) {
       setYAxisMax(calculateYAxisMax(chartData, selectedEventType))
     }
-  }, [selectedEventType, chartData])
+  }, [selectedEventType, chartData, calculateYAxisMax])
 
   return (
     <Card className={isBlurred ? "relative" : ""}>
