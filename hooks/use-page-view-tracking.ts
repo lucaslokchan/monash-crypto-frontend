@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 import { logPageView } from "@/lib/user-activity"
 import { isAuthenticated } from "@/lib/auth"
@@ -12,6 +12,8 @@ import { isAuthenticated } from "@/lib/auth"
 export function usePageViewTracking() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const lastLoggedPath = useRef<string>("")
+  const isLogging = useRef(false)
 
   useEffect(() => {
     // Only log if user is authenticated
@@ -21,8 +23,16 @@ export function usePageViewTracking() {
         ? `${pathname}?${searchParams.toString()}`
         : pathname
 
-      // Log the page view
-      logPageView(fullPath)
+      // Prevent duplicate calls for the same path and avoid concurrent calls
+      if (fullPath !== lastLoggedPath.current && !isLogging.current) {
+        isLogging.current = true
+        lastLoggedPath.current = fullPath
+        
+        // Log the page view
+        logPageView(fullPath).finally(() => {
+          isLogging.current = false
+        })
+      }
     }
   }, [pathname, searchParams])
 }

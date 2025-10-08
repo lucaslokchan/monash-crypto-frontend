@@ -15,7 +15,7 @@ export enum UserActivityEnum {
 export interface ActivityDetails {
   postId?: number
   duration?: number
-  page?: string
+  data?: string
   [key: string]: any
 }
 
@@ -100,8 +100,9 @@ export async function logUserActivity(
  * @param postId - Optional post ID if viewing a specific post
  */
 export async function logPageView(path?: string, postId?: number): Promise<LogActivityResponse> {
+  const actualPath = path || (typeof window !== "undefined" ? window.location.pathname : undefined)
   return logUserActivity(UserActivityEnum.PAGE_VIEW, {
-    path: path || (typeof window !== "undefined" ? window.location.pathname : undefined),
+    data: actualPath ? `path: ${actualPath}` : undefined,
     postId,
   })
 }
@@ -141,10 +142,88 @@ export async function logTimeSpent(
   path?: string,
   postId?: number
 ): Promise<LogActivityResponse> {
+  const actualPath = path || (typeof window !== "undefined" ? window.location.pathname : undefined)
   return logUserActivity(UserActivityEnum.TIME_SPENT, {
     duration,
-    path: path || (typeof window !== "undefined" ? window.location.pathname : undefined),
+    data: actualPath ? `path: ${actualPath}` : undefined,
     postId,
   })
 }
 
+// Type for user activity data from the API
+export interface UserActivityData {
+  userUuid: string
+  eventType: UserActivityEnum 
+  details: string
+  creationTime: string
+}
+
+// Type for fetching activities response
+export interface FetchActivitiesResponse {
+  success: boolean
+  activities?: UserActivityData[]
+  message?: string
+}
+
+// Type for pagination parameters
+export interface PaginationParams {
+  page?: number
+  limit?: number
+}
+
+/**
+ * Fetches user activities from the backend API with pagination support
+ * @param params - Pagination parameters (page and limit)
+ * @returns Promise with the activities data
+ */
+export async function fetchUserActivities(params?: PaginationParams): Promise<FetchActivitiesResponse> {
+  try {
+    const authToken = getAuthToken()
+    
+    if (!authToken) {
+      console.warn("No auth token available for fetching activities")
+      return {
+        success: false,
+        message: "User not authenticated",
+      }
+    }
+
+    // Get API URL from environment variable or use default
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+    
+    // Build query params
+    const queryParams = new URLSearchParams()
+    if (params?.page) queryParams.append("page", params.page.toString())
+    if (params?.limit) queryParams.append("limit", params.limit.toString())
+    
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ""
+    
+    const response = await fetch(`${apiUrl}/api/activity${queryString}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${authToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("Failed to fetch user activities:", errorText)
+      return {
+        success: false,
+        message: `Failed to fetch activities: ${response.statusText}`,
+      }
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      activities: data,
+    }
+  } catch (error) {
+    console.error("Error fetching user activities:", error)
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error occurred",
+    }
+  }
+}
