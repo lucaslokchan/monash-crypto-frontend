@@ -163,12 +163,18 @@ export interface FetchActivitiesResponse {
   message?: string
 }
 
+// Type for pagination parameters
+export interface PaginationParams {
+  page?: number
+  limit?: number
+}
+
 /**
- * Fetches user activities from the backend API
- * @param limit - Optional limit for the number of activities to fetch
+ * Fetches user activities from the backend API with pagination support
+ * @param params - Pagination parameters (page and limit)
  * @returns Promise with the activities data
  */
-export async function fetchUserActivities(limit?: number): Promise<FetchActivitiesResponse> {
+export async function fetchUserActivities(params?: PaginationParams): Promise<FetchActivitiesResponse> {
   try {
     const authToken = getAuthToken()
     
@@ -184,9 +190,13 @@ export async function fetchUserActivities(limit?: number): Promise<FetchActiviti
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
     
     // Build query params
-    const queryParams = limit ? `?limit=${limit}` : ""
+    const queryParams = new URLSearchParams()
+    if (params?.page) queryParams.append("page", params.page.toString())
+    if (params?.limit) queryParams.append("limit", params.limit.toString())
     
-    const response = await fetch(`${apiUrl}/api/activity${queryParams}`, {
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ""
+    
+    const response = await fetch(`${apiUrl}/api/activity${queryString}`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${authToken}`,

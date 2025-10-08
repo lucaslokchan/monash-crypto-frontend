@@ -6,6 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import { formatDistanceToNow } from "date-fns"
 import { fetchUserActivities, UserActivityData, UserActivityEnum } from "@/lib/user-activity"
 
@@ -31,10 +39,13 @@ interface UserActivityTableProps {
   isBlurred?: boolean
 }
 
+const ITEMS_PER_PAGE = 10
+
 export function UserActivityTable({ isBlurred = false }: UserActivityTableProps) {
-  const [activities, setActivities] = useState<FormattedActivity[]>([])
+  const [allActivities, setAllActivities] = useState<FormattedActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     loadActivities()
@@ -45,7 +56,8 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
       setLoading(true)
       setError(null)
       
-      const response = await fetchUserActivities(50) // Fetch last 50 activities
+      // Fetch all activities without pagination params
+      const response = await fetchUserActivities()
       
       if (!response.success) {
         setError(response.message || "Failed to load activities")
@@ -54,7 +66,7 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
 
       if (response.activities) {
         const formattedActivities = formatActivities(response.activities)
-        setActivities(formattedActivities)
+        setAllActivities(formattedActivities)
       }
     } catch (err) {
       setError("Error loading activities")
@@ -130,10 +142,61 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
     }
   }
 
+  // Calculate pagination values
+  const totalItems = allActivities.length
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE)
+  const showPagination = totalPages > 1
+  
+  // Get activities for current page
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = startIndex + ITEMS_PER_PAGE
+  const currentActivities = allActivities.slice(startIndex, endIndex)
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+    }
+  }
+
+  const renderPaginationItems = () => {
+    const items = []
+    const maxVisiblePages = 5
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1)
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      items.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            onClick={(e) => {
+              e.preventDefault()
+              handlePageChange(i)
+            }}
+            isActive={currentPage === i}
+            className="cursor-pointer"
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      )
+    }
+
+    return items
+  }
+
   return (
     <Card className={isBlurred ? "relative" : ""}>
       <CardHeader>
         <CardTitle>Detailed User Journey</CardTitle>
+        {!loading && totalItems > 0 && (
+          <p className="text-sm text-muted-foreground">
+            Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} activities
+          </p>
+        )}
       </CardHeader>
       <CardContent>
         {error && (
@@ -144,12 +207,13 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
         
         {loading ? (
           <div className="space-y-2">
-            {[...Array(5)].map((_, i) => (
+            {[...Array(ITEMS_PER_PAGE)].map((_, i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
         ) : (
-          <Table>
+          <>
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>User</TableHead>
@@ -159,14 +223,14 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
               </TableRow>
             </TableHeader>
             <TableBody>
-              {activities.length === 0 ? (
+              {                currentActivities.length === 0 && allActivities.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground">
                     No activities found
                   </TableCell>
                 </TableRow>
               ) : (
-                activities.map((activity) => (
+                currentActivities.map((activity) => (
                   <TableRow key={activity.id}>
                     <TableCell className="font-medium">{activity.user}</TableCell>
                     <TableCell>
@@ -183,6 +247,37 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
               )}
             </TableBody>
           </Table>
+          
+          {showPagination && !loading && (
+            <div className="mt-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handlePageChange(currentPage - 1)
+                      }}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  
+                  {renderPaginationItems()}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handlePageChange(currentPage + 1)
+                      }}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+          </>
         )}
       </CardContent>
     </Card>
