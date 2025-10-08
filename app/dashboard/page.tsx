@@ -68,16 +68,25 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Welcome Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground">Welcome back, {user.username}!</h1>
-        <p className="text-muted-foreground">Here's an overview of your blog performance.</p>
+        <h1 className="text-3xl font-bold text-foreground">
+          Welcome back, {user.username}!
+        </h1>
+        <p className="text-muted-foreground">
+          Here's an overview of your blog performance.
+        </p>
       </div>
 
       {/* Basic Analytics - Visible to All Bloggers */}
       <div className="space-y-6">
-        <h2 className="text-xl font-semibold text-foreground">Analytics Overview</h2>
+        <h2 className="text-xl font-semibold text-foreground">
+          Analytics Overview
+        </h2>
 
+        {/* User Activity Table - Available to All Users */}
+        <UserActivityTable />
+        
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Views"
             value={mockStats.totalViews.toLocaleString()}
@@ -97,7 +106,7 @@ export default function DashboardPage() {
             trend={{ value: -2.1, isPositive: false }}
           />
           <StatCard title="My Posts" value={mockStats.totalPosts} icon={FileText} />
-        </div>
+        </div> */}
 
         {/* Posts Table */}
         <PostsTable posts={mockPosts} />
@@ -105,7 +114,9 @@ export default function DashboardPage() {
 
       {/* Premium Analytics - Conditional Visibility */}
       <div className="space-y-6">
-        <h2 className="text-xl font-semibold text-foreground">Advanced Analytics</h2>
+        <h2 className="text-xl font-semibold text-foreground">
+          Advanced Analytics
+        </h2>
 
         {/* Time Series Chart */}
         {isPremium ? (
@@ -118,19 +129,7 @@ export default function DashboardPage() {
             <TimeSeriesChart />
           </PremiumFeatureLock>
         )}
-
-        {/* User Activity Table */}
-        {isPremium ? (
-          <UserActivityTable />
-        ) : (
-          <PremiumFeatureLock
-            title="Upgrade to Premium"
-            description="Upgrade to Premium to see detailed user journey mapping and interaction analytics!"
-          >
-            <UserActivityTable />
-          </PremiumFeatureLock>
-        )}
       </div>
     </div>
-  )
+  );
 }
