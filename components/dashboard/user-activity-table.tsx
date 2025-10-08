@@ -19,7 +19,7 @@ import { fetchUserActivities, UserActivityData, UserActivityEnum } from "@/lib/u
 
 // Interface for parsed activity details
 interface ParsedActivityDetails {
-  path?: string
+  data?: string
   postId?: number
   duration?: number
   [key: string]: any
@@ -88,7 +88,7 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
         // Format display based on event type
         switch (activity.eventType) {
           case UserActivityEnum.PAGE_VIEW:
-            detailsDisplay = parsedDetails.path || "Unknown page"
+            detailsDisplay = parsedDetails.data || "Unknown page"
             if (parsedDetails.postId) {
               detailsDisplay += ` (Post ID: ${parsedDetails.postId})`
             }
@@ -99,7 +99,7 @@ export function UserActivityTable({ isBlurred = false }: UserActivityTableProps)
             detailsDisplay = parsedDetails.postId ? `Post ID: ${parsedDetails.postId}` : "Unknown post"
             break
           case UserActivityEnum.TIME_SPENT:
-            detailsDisplay = parsedDetails.path || "Unknown page"
+            detailsDisplay = parsedDetails.data || "Unknown page"
             if (parsedDetails.duration) {
               const minutes = Math.floor(parsedDetails.duration / 60)
               const seconds = parsedDetails.duration % 60

@@ -15,7 +15,7 @@ export enum UserActivityEnum {
 export interface ActivityDetails {
   postId?: number
   duration?: number
-  page?: string
+  data?: string
   [key: string]: any
 }
 
@@ -101,7 +101,7 @@ export async function logUserActivity(
  */
 export async function logPageView(path?: string, postId?: number): Promise<LogActivityResponse> {
   return logUserActivity(UserActivityEnum.PAGE_VIEW, {
-    path: path || (typeof window !== "undefined" ? window.location.pathname : undefined),
+    data: path || (typeof window !== "undefined" ? window.location.pathname : undefined),
     postId,
   })
 }
@@ -143,7 +143,7 @@ export async function logTimeSpent(
 ): Promise<LogActivityResponse> {
   return logUserActivity(UserActivityEnum.TIME_SPENT, {
     duration,
-    path: path || (typeof window !== "undefined" ? window.location.pathname : undefined),
+    data: path || (typeof window !== "undefined" ? window.location.pathname : undefined),
     postId,
   })
 }
